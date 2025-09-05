@@ -19,7 +19,7 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
         boolean hasAuthAnnotation = parameter.getParameterAnnotation(Auth.class) != null;
         boolean isAuthUserType = parameter.getParameterType().equals(AuthUser.class);
 
-        // @Auth 어노테이션과 AuthUser 타입이 함께 사용되지 않은 경우 예외 발생
+        // @Auth 어노테이션과 AuthUser 타입이 함께 사용되지 않은 경우 예외 발생 (TodoController - @Auth AuthUser authUser)
         if (hasAuthAnnotation != isAuthUserType) {
             throw new AuthException("@Auth와 AuthUser 타입은 함께 사용되어야 합니다.");
         }

@@ -62,6 +62,7 @@ public class JwtFilter implements Filter {
             httpRequest.setAttribute("userId", Long.parseLong(claims.getSubject()));
             httpRequest.setAttribute("email", claims.get("email"));
             httpRequest.setAttribute("userRole", claims.get("userRole"));
+            httpRequest.setAttribute("nickname", claims.get("nickname"));
 
             if (url.startsWith("/admin")) {
                 // 관리자 권한이 없는 경우 403을 반환합니다.
@@ -94,15 +95,3 @@ public class JwtFilter implements Filter {
         Filter.super.destroy();
     }
 }
-
-/*
-When to override:
-Override init(...) if you need to load config, warm up caches, build expensive objects, validate environment, etc.
-If something critical is missing, you can throw ServletException to fail startup.
-Override destroy() if you need to release resources (close pools, flush metrics, etc.).
-
-Legacy note:
-In older javax.servlet APIs (pre–Servlet 4), Filter didn’t provide default bodies, so you had to implement empty
-init/destroy methods yourself. If you ever work on legacy code, that’s why you’ll sometimes see empty overrides.
-So for your current Spring Boot 3 setup: it’s perfectly fine to delete both overrides.
- */
