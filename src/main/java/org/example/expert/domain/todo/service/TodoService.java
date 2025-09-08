@@ -15,7 +15,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -26,16 +30,32 @@ public class TodoService {
     private final WeatherClient weatherClient;
     private final TodoCommandService todoCommandService;
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public TodoSaveResponse saveTodo(AuthUser authUser, TodoSaveRequest todoSaveRequest) {
         String weather = weatherClient.getTodayWeather();
 
         return todoCommandService.saveTodo(authUser, todoSaveRequest, weather);
     }
 
-    public Page<TodoResponse> getTodos(int page, int size) {
+    public Page<TodoResponse> getTodos(
+            int page,
+            int size,
+            String weather,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
+        // 빈 문자열은 무시
+        String normalizedWeather = (weather != null && weather.isBlank()) ? null : weather;
+
+        // 기간: 포함 검색. end를 하루 끝으로 확장(23:59:59.999999999)
+        LocalDateTime start = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime end = (endDate != null) ? endDate.plusDays(1).atStartOfDay().minusNanos(1) : null;
+
+        //Page<Todo> todos = todoRepository.findAllByOrderByModifiedAtDesc(pageable);
+
+        Page<Todo> todos = todoRepository.searchTodos(normalizedWeather,start, end, pageable);
 
         return todos.map(todo -> new TodoResponse(
                 todo.getId(),
